@@ -26,7 +26,7 @@ class Calculator:
 
         self.precedence: dict[str, int] = {
 
-            "+": 1,
+            "+": 3,
 
             "-": 1,
 

@@ -1,5 +1,7 @@
 import os
 
+import sys
+
 from prompts import system_prompt
 
 from dotenv import load_dotenv
@@ -45,39 +47,57 @@ def main():
 
     )
 
+    for n in range(20):
 
+        response = client.chat.completions.create(
 
-    response = client.chat.completions.create(
+            model="openrouter/free",
 
-        model="openrouter/free",
+            messages= messages,
 
-        messages= messages,
+            tools=available_functions,
 
-        tools=available_functions,
+        )
 
-    )
+        message = response.choices[0].message
 
-    message = response.choices[0].message
+        messages.append(message)
 
-    if response.usage == None:
-        raise RuntimeError("failed API request")
+        if response.usage == None:
+            raise RuntimeError("failed API request")
 
-    if message.tool_calls:
+        if message.tool_calls:
 
-        for tool_call in message.tool_calls:
+            for tool_call in message.tool_calls:
 
-            function_args = json.loads(tool_call.function.arguments or "{}")
+                result_message = call_function(tool_call, args.verbose)
 
-            print(f"Calling function: {tool_call.function.name}({function_args})")
+                if not result_message['content']:
 
-    else:
+                    raise Exception("Error")
 
-        if args.verbose == True:
-            print(f"User prompt: {args.user_prompt}")
-            print(f"Prompt tokens: {response.usage.prompt_tokens}")
-            print(f"Response tokens: {response.usage.completion_tokens}")
+                messages.append(result_message)
 
-        print(response.choices[0].message.content)
+                if args.verbose:
+
+                    print(f"-> {result_message['content']}")
+
+        else:
+
+            if args.verbose == True:
+                print(f"User prompt: {args.user_prompt}")
+                print(f"Prompt tokens: {response.usage.prompt_tokens}")
+                print(f"Response tokens: {response.usage.completion_tokens}")
+
+            print(response.choices[0].message.content)
+
+            break
+
+    if n == 20:
+
+        print("maximum iterations reached without response")
+
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

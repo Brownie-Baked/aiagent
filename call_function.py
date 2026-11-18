@@ -10,6 +10,14 @@ from functions.run_python_file import schema_run_python_file
 
 from functions.write_file import schema_write_file
 
+from functions.get_files_info import get_files_info
+
+from functions.get_file_content import get_file_content
+
+from functions.run_python_file import run_python_file
+
+from functions.write_file import write_file
+
 available_functions = [
 
     schema_get_files_info,
@@ -28,7 +36,7 @@ def call_function(tool_call, verbose: bool = False) -> dict:
 
     function_args = json.loads(tool_call.function.arguments or "{}")
 
-    if args.verbose == True:
+    if verbose == True:
 
         print(f" - Calling function: {function_name}({function_args})")
 
